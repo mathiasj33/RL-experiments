@@ -10,9 +10,9 @@ class GaussianPolicyNetwork(PolicyNetwork):
         super().__init__()
         self.mean_net = nn.Sequential(
             nn.Linear(obs_space_dims, hidden1),
-            nn.ReLU(),
+            nn.Tanh(),
             nn.Linear(hidden1, hidden2),
-            nn.ReLU(),
+            nn.Tanh(),
             nn.Linear(hidden2, action_space_dims)
         )
         log_std = -0.5 * torch.ones(action_space_dims, dtype=torch.float32)

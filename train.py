@@ -17,12 +17,12 @@ def train():
         np.random.seed(seed)
         random.seed(seed)
 
-        # env = gym.make('InvertedPendulum-v4')
-        env = gym.make('Acrobot-v1')
+        env = gym.make('InvertedPendulum-v4')
+        # env = gym.make('Acrobot-v1')
         obs_space_dims = env.observation_space.shape[0]
-        # action_space_dims = env.action_space.shape[0]
-        action_space_dims = 3
-        policy_net = CategoricalPolicyNetwork(obs_space_dims, action_space_dims, 16, 32)
+        action_space_dims = env.action_space.shape[0]
+        # action_space_dims = 3
+        policy_net = GaussianPolicyNetwork(obs_space_dims, action_space_dims, 16, 32)
         pg = VanillaPolicyGradient(policy_net)
 
         rewards = []
@@ -34,7 +34,7 @@ def train():
             pbar.set_postfix({'reward': reward})
 
         env.close()
-        torch.save(pg.policy_net.state_dict(), 'models/model.pth')
+        torch.save(pg.policy_net.state_dict(), 'models/pendulum.pth')
 
         plt.plot(rewards)
         plt.show()
