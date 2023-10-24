@@ -3,7 +3,7 @@ import matplotlib.animation as animation
 import matplotlib.pyplot as plt
 import torch
 
-from categorical_policy_network import CategoricalPolicyNetwork
+from policy.categorical_policy_network import CategoricalPolicyNetwork
 
 with torch.no_grad():
     env = gym.make('Acrobot-v1', render_mode='rgb_array')

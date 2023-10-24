@@ -5,9 +5,9 @@ import matplotlib.pyplot as plt
 import random
 from tqdm import tqdm
 
-from gaussian_policy_network import GaussianPolicyNetwork
-from categorical_policy_network import CategoricalPolicyNetwork
-from vanilla_policy_gradient import VanillaPolicyGradient
+from policy.gaussian_policy_network import GaussianPolicyNetwork
+from policy.categorical_policy_network import CategoricalPolicyNetwork
+from algorithms.vanilla_policy_gradient import VanillaPolicyGradient
 
 def train():
     num_episodes = 2000

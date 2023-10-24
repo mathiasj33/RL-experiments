@@ -1,7 +1,7 @@
 import torch
 from gymnasium.core import ObsType, Env
 
-from policy_network import PolicyNetwork
+from policy.policy_network import PolicyNetwork
 
 class VanillaPolicyGradient:
     def __init__(self, policy_net: PolicyNetwork):

@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 from torch.distributions.normal import Normal
 
-from policy_network import PolicyNetwork
+from policy.policy_network import PolicyNetwork
 
 class GaussianPolicyNetwork(PolicyNetwork):
 

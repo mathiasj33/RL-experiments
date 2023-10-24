@@ -1,6 +1,6 @@
 import torch
 import gymnasium as gym
-from gaussian_policy_network import GaussianPolicyNetwork
+from policy.gaussian_policy_network import GaussianPolicyNetwork
 
 env = gym.make('InvertedPendulum-v4', render_mode='human')
 obs_space_dims = env.observation_space.shape[0]

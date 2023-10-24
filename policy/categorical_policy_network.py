@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 from torch.distributions.categorical import Categorical
 
-from policy_network import PolicyNetwork
+from policy.policy_network import PolicyNetwork
 
 
 class CategoricalPolicyNetwork(PolicyNetwork):
