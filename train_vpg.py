@@ -10,7 +10,7 @@ from policy.categorical_policy_network import CategoricalPolicyNetwork
 from algorithms.vanilla_policy_gradient import VanillaPolicyGradient
 
 def train():
-    num_episodes = 2000
+    num_episodes = 1000
 
     for seed in [1]:
         torch.manual_seed(seed)
@@ -19,6 +19,7 @@ def train():
 
         env = gym.make('InvertedPendulum-v4')
         # env = gym.make('Acrobot-v1')
+        env.reset(seed=seed)
         obs_space_dims = env.observation_space.shape[0]
         action_space_dims = env.action_space.shape[0]
         # action_space_dims = 3
@@ -27,16 +28,20 @@ def train():
 
         rewards = []
         pbar = tqdm(range(num_episodes))
-        for _ in pbar:
-            obs, _ = env.reset(seed=seed)
-            reward = pg.train_episode(obs, env)
-            rewards.append(reward)
-            pbar.set_postfix({'reward': reward})
+        try:
+            for _ in pbar:
+                obs, _ = env.reset()
+                reward = pg.train_episode(obs, env)
+                rewards.append(reward)
+                pbar.set_postfix({'reward': reward})
+        except KeyboardInterrupt:
+            print('Interrupted.')
 
         env.close()
         torch.save(pg.policy_net.state_dict(), 'models/pendulum.pth')
 
         plt.plot(rewards)
+        plt.savefig('vpg.png')
         plt.show()
 
 

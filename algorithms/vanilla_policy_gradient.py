@@ -28,7 +28,7 @@ class VanillaPolicyGradient:
             reward_sums.insert(0, running_reward)
         loss = 0
         for log_prob, delta in zip(log_probs, reward_sums):
-            loss -= log_prob.mean() * delta
+            loss -= log_prob.sum() * delta  # multiply diagonal Gaussians - sum their logprobs
 
         self.optimiser.zero_grad()
         loss.backward()
