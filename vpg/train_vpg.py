@@ -8,7 +8,8 @@ import torch
 from gymnasium.wrappers import ClipAction
 
 import utils.plot
-from config import VPGConfig, inverted_pendulum_config
+from config import VPGConfig, inverted_pendulum_config, cartpole_config
+from utils.no_logger import NoLogger
 from utils.file_logger import FileLogger
 from utils.logger import LogMetadata, Logger
 from utils.wandb_logger import WandbLogger
@@ -18,10 +19,10 @@ sns.set_theme()
 
 
 def main():
-    experiment = 'tmp2'
+    experiment = 'default'
     config = inverted_pendulum_config
     show_plots = False
-    seeds = range(3, 6)
+    seeds = range(5)
     for seed in seeds:
         print(f'Running seed {seed}...')
         torch.manual_seed(seed)

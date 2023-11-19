@@ -33,10 +33,9 @@ class VPG:
             running_return = r + self.config.gamma * running_return
             discounted_returns.append(running_return)
         discounted_returns.reverse()
-        loss = 0
-        for log_prob, ret in zip(log_probs, discounted_returns):
-            loss -= log_prob.sum() * ret  # multiply diagonal Gaussians - sum their logprobs
-        return loss
+        summed_log_probs = torch.cat([t.sum().reshape(1, 1) for t in log_probs])
+        weighted = summed_log_probs * torch.tensor(discounted_returns).reshape(-1, 1)
+        return -weighted.sum()
 
     def train(self):
         pbar = tqdm(range(self.config.num_episodes))
