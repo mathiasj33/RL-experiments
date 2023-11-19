@@ -1,5 +1,5 @@
-try.*
+plot.ipynb
 .idea
 __pycache__
 models
-results
+logs

@@ -1,49 +1,58 @@
 import random
+
 import gymnasium as gym
 import matplotlib.pyplot as plt
 import numpy as np
+import seaborn as sns
 import torch
-from gymnasium.wrappers import ClipAction, RecordEpisodeStatistics
-import os
+from gymnasium.wrappers import ClipAction
 
-from config import VPGConfig, inverted_pendulum_config, cartpole_config, acrobot_config
+import utils.plot
+from config import VPGConfig, inverted_pendulum_config
+from utils.file_logger import FileLogger
+from utils.logger import LogMetadata, Logger
 from vpg import VPG
 
+sns.set_theme()
+
+
 def main():
-    experiment_name = 'default'
+    experiment = 'tmp'
     config = inverted_pendulum_config
-    plot = False
-    seeds = range(1, 5)
+    plot = True
+    seeds = range(1)
     for seed in seeds:
         print(f'Running seed {seed}...')
         torch.manual_seed(seed)
         np.random.seed(seed)
         random.seed(seed)
-        returns = train(config, seed)
-        path = f'results/vpg/{config.env_name}/{experiment_name}'
-        if not os.path.exists(path):
-            os.makedirs(path)
-        np.save(f'{path}/seed{seed}.npy', returns)
-        print('Saved results.')
+
+        logger = FileLogger(LogMetadata(
+            algorithm='vpg',
+            env=config.env_name,
+            experiment=experiment,
+            seed=seed,
+            config=config
+        ), keys={'Episode', 'EpisodeLength', 'Return', 'Loss', 'TotalSteps', 'Time'}, stds={'Return', 'Loss'})
+        logger.log_metadata()
+        train(config, seed, logger)
         if plot:
-            plt.plot(returns)
+            df = utils.plot.load_data(config.env_name, algorithm_and_experiments={'vpg': [experiment]})
+            sns.relplot(df, x='Episode', y='SmoothedReturn', kind='line', errorbar='sd')
             plt.show()
 
 
-def train(config: VPGConfig, seed: int) -> list[int]:
+def train(config: VPGConfig, seed: int, logger: Logger):
     env = gym.make(config.env_name)
-    env = RecordEpisodeStatistics(env)
     if not config.discrete:
         env = ClipAction(env)
     env.reset(seed=seed)
-    vpg = VPG(config, env)
-    returns = []
+    vpg = VPG(config, env, logger)
     try:
-        vpg.train(returns)
+        vpg.train()
     except KeyboardInterrupt:
         print('Interrupted.')
     env.close()
-    return returns
 
 
 if __name__ == '__main__':

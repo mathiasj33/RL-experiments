@@ -14,7 +14,7 @@ class LogMetadata:
 
 
 class Logger(ABC):
-    def __init__(self, metadata: LogMetadata, keys: set[str], stds: set[str], log_dir='logs'):
+    def __init__(self, metadata: LogMetadata, keys: set[str], stds: set[str]):
         """
         :param keys: specifies the keys for the values that this logger saves.
         :param stds: specifies for which keys both the mean and standard deviation is stored.
@@ -22,7 +22,6 @@ class Logger(ABC):
         self.metadata = metadata
         self.keys = keys
         self.stds = stds
-        self.log_dir = log_dir
         self.state = {}
 
     @abstractmethod
@@ -36,6 +35,13 @@ class Logger(ABC):
     def log(self):
         """
         Saves the current state of the logger as a single row of data and resets the logger's state.
+        """
+        pass
+
+    @abstractmethod
+    def save_model(self, model):
+        """
+        Saves the trained model.
         """
         pass
 

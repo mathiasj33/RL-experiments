@@ -18,7 +18,7 @@ inverted_pendulum_config = VPGConfig(
     discrete=False,
     gamma=0.99,
     num_episodes=1000,
-    layer_sizes=[16, 32],
+    layer_sizes=[32, 32],
     activation=nn.Tanh,
     actor_lr=1e-3
 )

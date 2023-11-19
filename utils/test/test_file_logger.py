@@ -4,27 +4,33 @@ import unittest
 
 import numpy as np
 import pandas as pd
+import torch
 
-from utils.csv_logger import CsvLogger
+from utils.file_logger import FileLogger
 from utils.logger import LogMetadata
 
 
-class CsvLoggerTest(unittest.TestCase):
+class FileLoggerTest(unittest.TestCase):
 
     def setUp(self) -> None:
         if not os.path.exists('test-logs'):
             os.makedirs('test-logs')
-        self.logger = CsvLogger(LogMetadata(
+        if not os.path.exists('test-models'):
+            os.makedirs('test-models')
+        self.logger = FileLogger(LogMetadata(
             algorithm='vpg',
             env='cartpole',
             experiment='default',
             seed=1,
             config=dict(lr=0.01, sizes=[10, 10])
-        ), keys={'Epoch', 'EpochLength', 'Return', 'Loss'}, stds={'Return', 'Loss'}, log_dir='test-logs')
+        ), keys={'Epoch', 'EpochLength', 'Return', 'Loss'}, stds={'Return', 'Loss'}, log_dir='test-logs',
+            model_dir='test-models')
 
     def tearDown(self) -> None:
         if os.path.exists('test-logs'):
             shutil.rmtree('test-logs')
+        if os.path.exists('test-models'):
+            shutil.rmtree('test-models')
 
     def test_logging(self):
         self.logger.log_metadata()
@@ -50,7 +56,7 @@ class CsvLoggerTest(unittest.TestCase):
     def test_cannot_overwrite_existing_log(self):
         self.logger.store(Epoch=1, Return=5, EpochLength=7, Loss=4)
         self.logger.log()
-        self.assertRaises(ValueError, CsvLogger, LogMetadata(
+        self.assertRaises(ValueError, FileLogger, LogMetadata(
             algorithm='vpg',
             env='cartpole',
             experiment='default',
@@ -68,3 +74,11 @@ class CsvLoggerTest(unittest.TestCase):
         self.logger.log()
         self.logger.store(Return=1, EpochLength=1, Loss=1, Foo=3)
         self.assertRaises(ValueError, self.logger.log)
+
+    def test_save_model(self):
+        model = torch.nn.Linear(10, 10)
+        torch.nn.init.kaiming_normal_(model.weight)
+        self.logger.save_model(model)
+        loaded = torch.nn.Linear(10, 10)
+        loaded.load_state_dict(torch.load('test-models/vpg/cartpole/default/model_seed_1.pth'))
+        torch.testing.assert_close(loaded.weight, model.weight)
