@@ -3,3 +3,4 @@ plot.ipynb
 __pycache__
 models
 logs
+wandb

@@ -27,7 +27,7 @@ class Logger(ABC):
     @abstractmethod
     def log_metadata(self):
         """
-        Saves the metadata of the logger.
+        Saves the metadata of the logger. Should be called from the logger's constructor.
         """
         pass
 
@@ -42,6 +42,13 @@ class Logger(ABC):
     def save_model(self, model):
         """
         Saves the trained model.
+        """
+        pass
+
+    @abstractmethod
+    def finish(self):
+        """
+        Finishes logging for the current experiment.
         """
         pass
 

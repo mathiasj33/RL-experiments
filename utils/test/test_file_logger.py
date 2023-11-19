@@ -33,7 +33,6 @@ class FileLoggerTest(unittest.TestCase):
             shutil.rmtree('test-models')
 
     def test_logging(self):
-        self.logger.log_metadata()
         self.assertTrue(os.path.exists('test-logs/vpg/cartpole/default/metadata_seed_1.json'))
 
         self.logger.store(Epoch=1)
