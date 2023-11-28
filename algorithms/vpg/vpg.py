@@ -77,4 +77,4 @@ class VPG:
 
             if ret > max_ret:
                 max_ret = ret
-                self.logger.save_model(self.actor)
+                self.logger.save_model(self.actor, 'actor')
