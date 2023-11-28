@@ -9,20 +9,21 @@ sns.set_theme()
 
 
 def main():
-    env = 'InvertedPendulum-v4'
+    env = 'HalfCheetah-v4'
     algorithm_and_experiments = {
-        'vpg': ['default', 'relu', 'wider']
+        'ddpg': ['default']
     }
-    df = load_data(env, algorithm_and_experiments)
-    sns.relplot(df, x='Episode', y='SmoothedReturn', kind='line', errorbar='sd', col='Experiment', col_wrap=2)
+    df = load_data(env, algorithm_and_experiments, to_smooth=['TestEpisodeReturn'], log_dir='server_logs')
+    sns.relplot(df, x='TotalSteps', y='TestEpisodeReturn_smooth', kind='line', errorbar='sd', col='Experiment')
     plt.show()
 
 
-def load_data(env: str, algorithm_and_experiments: dict[str, list[str]], smooth_radius=10) -> pd.DataFrame:
+def load_data(env: str, algorithm_and_experiments: dict[str, list[str]], to_smooth: list[str], smooth_radius=10,
+              log_dir='logs') -> pd.DataFrame:
     dfs = []
     for alg, experiments in algorithm_and_experiments.items():
         for experiment in experiments:
-            path = f'logs/{alg}/{env}/{experiment}'
+            path = f'{log_dir}/{alg}/{env}/{experiment}'
             if not os.path.exists(path):
                 raise ValueError(f'Invalid path: {path}')
             for file in os.listdir(path):
@@ -32,9 +33,13 @@ def load_data(env: str, algorithm_and_experiments: dict[str, list[str]], smooth_
                 df['Algorithm'] = alg
                 df['Experiment'] = experiment
                 df['Seed'] = int(file.split('_')[-1].replace('.csv', ''))
-                df['SmoothedReturn'] = smooth(df['Return'], smooth_radius)
+                for col in to_smooth:
+                    df[f'{col}_smooth'] = smooth(df[col], smooth_radius)
                 dfs.append(df)
-    return pd.concat(dfs)
+    result = pd.concat(dfs)
+    if result.isna().any().any():
+        print('Warning: data contains NaN values')
+    return result
 
 
 def smooth(row, radius):
