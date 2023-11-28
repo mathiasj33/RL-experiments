@@ -6,8 +6,8 @@ import numpy as np
 import pandas as pd
 import torch
 
-from utils.file_logger import FileLogger
-from utils.logger import LogMetadata
+from src.utils.file_logger import FileLogger
+from src.utils.logger import LogMetadata
 
 
 class FileLoggerTest(unittest.TestCase):

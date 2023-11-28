@@ -2,7 +2,7 @@ import unittest
 import torch
 from torch.nn import Sequential, Linear
 
-from utils.torch_utils import polyak_average
+from src.utils.torch_utils import polyak_average
 
 
 class TorchUtilsTest(unittest.TestCase):
