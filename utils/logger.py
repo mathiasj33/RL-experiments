@@ -39,9 +39,11 @@ class Logger(ABC):
         pass
 
     @abstractmethod
-    def save_model(self, model):
+    def save_model(self, model, name):
         """
         Saves the trained model.
+        :param model: the model to save
+        :param name: the name of the model, i.e. actor or critic
         """
         pass
 
@@ -68,9 +70,11 @@ class Logger(ABC):
                     self.state[key] = [current_value, value]
 
     def check_data_integrity(self):
-        if self.state.keys() != self.keys:
-            raise ValueError(
-                f'Specified keys do not match given keys.\nSpecified: {self.keys}\nGiven: {self.state.keys()}')
+        for k in self.state.keys():
+            if k.endswith('_std'):
+                k = k[:len(k) - len('_std')]
+            if k not in self.keys:
+                raise ValueError(f'Logged unspecified key: {k}')
 
     def aggregate(self):
         """
@@ -78,7 +82,12 @@ class Logger(ABC):
         """
         for key, value in list(self.state.items()):
             if isinstance(value, list):
-                self.state[f'{key}_mean'] = np.mean(value)
+                self.state[key] = np.mean(value)
                 if key in self.stds:
                     self.state[f'{key}_std'] = np.std(value)
-                del self.state[key]
+
+    def get(self, key):
+        """
+        Returns the value(s) associated with the key from the current state of the logger.
+        """
+        return self.state[key]

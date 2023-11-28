@@ -15,7 +15,7 @@ class NoLogger(Logger):
     def log(self):
         pass
 
-    def save_model(self, model):
+    def save_model(self, model, name):
         pass
 
     def finish(self):

@@ -17,16 +17,17 @@ class FileLogger(Logger):
         self.log_dir = log_dir
         self.model_dir = model_dir
         self.log_path = os.path.join(self.log_dir, self.metadata.algorithm, self.metadata.env, self.metadata.experiment)
-        self.model_path = os.path.join(self.model_dir, self.metadata.algorithm, self.metadata.env, self.metadata.experiment)
+        self.model_path = os.path.join(self.model_dir, self.metadata.algorithm, self.metadata.env, self.metadata.experiment,
+                                       f'seed_{self.metadata.seed}')
         self.log_file = f'{self.log_path}/log_seed_{self.metadata.seed}.csv'
-        self.model_file = f'{self.model_path}/model_seed_{self.metadata.seed}.pth'
         if os.path.exists(self.log_file):
             raise ValueError('Logging results already exist for selected experiment and seed!')
-        if not os.path.exists(self.log_path):
-            os.makedirs(self.log_path)
-        if not os.path.exists(self.model_path):
-            os.makedirs(self.model_path)
-        self.column_names = None
+        os.makedirs(self.log_path, exist_ok=True)
+        os.makedirs(self.model_path, exist_ok=True)
+        self.column_names = keys
+        for key in stds:
+            self.column_names.add(f'{key}_std')
+        self.column_names = sorted(list(keys))
         self.log_metadata()
 
     def log_metadata(self):
@@ -36,11 +37,7 @@ class FileLogger(Logger):
     def log(self):
         self.check_data_integrity()
         self.aggregate()
-        first_log = False
-        if self.column_names is None:
-            first_log = True
-            self.column_names = sorted(self.state.keys())
-
+        first_log = not os.path.exists(self.log_file)
         with open(self.log_file, 'a+', newline='') as f:
             writer = csv.DictWriter(f, fieldnames=self.column_names)
             if first_log:
@@ -48,8 +45,8 @@ class FileLogger(Logger):
             writer.writerow(self.state)
         self.state = {}
 
-    def save_model(self, model):
-        torch.save(model.state_dict(), self.model_file)
+    def save_model(self, model, name):
+        torch.save(model.state_dict(), f'{self.model_path}/{name}.pth')
 
     def finish(self):
-        pass  # nothing do to
+        pass  # nothing to do

@@ -1,3 +1,5 @@
+import dataclasses
+
 import wandb
 
 from utils.file_logger import FileLogger
@@ -10,7 +12,7 @@ class WandbLogger(FileLogger):
     """
     def __init__(self, metadata: LogMetadata, keys: set[str], stds: set[str], log_dir='logs', model_dir='models'):
         super().__init__(metadata, keys, stds, log_dir, model_dir)
-        wandb.init(project='rl-baselines', config=metadata.config, group=metadata.experiment, tags=['vpg', metadata.config.env_name])
+        wandb.init(project='rl-baselines', config=dataclasses.asdict(metadata))
 
     def log_metadata(self):
         super().log_metadata()
@@ -22,9 +24,9 @@ class WandbLogger(FileLogger):
         super().log()
         self.state = {}
 
-    def save_model(self, model):
-        super().save_model(model)
-        wandb.save(self.model_file)
+    def save_model(self, model, name):
+        super().save_model(model, name)
+        wandb.save(f'{self.model_path}/{name}.pth')
 
     def finish(self):
         super().finish()

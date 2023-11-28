@@ -32,6 +32,11 @@ class FileLoggerTest(unittest.TestCase):
         if os.path.exists('test-models'):
             shutil.rmtree('test-models')
 
+    def assert_log_equals(self, expected: list[list[float]]):
+        log = pd.read_csv('test-logs/vpg/cartpole/default/log_seed_1.csv')
+        expected = pd.DataFrame(expected, columns=['Epoch', 'EpochLength', 'Loss', 'Loss_std', 'Return', 'Return_std'])
+        pd.testing.assert_frame_equal(log, expected)
+
     def test_logging(self):
         self.assertTrue(os.path.exists('test-logs/vpg/cartpole/default/metadata_seed_1.json'))
 
@@ -44,13 +49,38 @@ class FileLoggerTest(unittest.TestCase):
         for i in range(5):
             self.logger.store(Return=i, EpochLength=i * 2, Loss=i * 3)
         self.logger.log()
-
-        log = pd.read_csv('test-logs/vpg/cartpole/default/log_seed_1.csv')
-        expected = pd.DataFrame([
+        self.assert_log_equals([
             [1, 8.5, 3.5, 0.5, 6.0, 1.0],
             [2, 4.0, 6.0, np.std([i * 3 for i in range(5)]), 2.0, np.std([i for i in range(5)])]
-        ], columns=['Epoch', 'EpochLength_mean', 'Loss_mean', 'Loss_std', 'Return_mean', 'Return_std'])
-        pd.testing.assert_frame_equal(log, expected)
+        ])
+
+    def test_missing_values(self):
+        self.logger.store(Epoch=1, Return=5, Loss=4)
+        self.logger.store(Return=3, Loss=5)
+        self.logger.log()
+        expected = [[1, np.nan, 4.5, 0.5, 4.0, 1.0]]
+        self.assert_log_equals(expected)
+
+        self.logger.store(Epoch=2, Return=6)
+        self.logger.log()
+        expected.append([2, np.nan, np.nan, np.nan, 6.0, np.nan])
+        self.assert_log_equals(expected)
+
+        self.logger.store(Epoch=3, Loss=7)
+        self.logger.log()
+        expected.append([3, np.nan, 7.0, np.nan, np.nan, np.nan])
+        self.assert_log_equals(expected)
+
+        self.logger.store(Epoch=4, Return=3, Loss=3)
+        self.logger.store(Return=3)
+        self.logger.log()
+        expected.append([4, np.nan, 3.0, np.nan, 3.0, 0.0])
+        self.assert_log_equals(expected)
+
+        self.logger.store(Epoch=5, EpochLength=3, Return=7, Loss=2)
+        self.logger.log()
+        expected.append([5, 3, 2.0, np.nan, 7.0, np.nan])
+        self.assert_log_equals(expected)
 
     def test_cannot_overwrite_existing_log(self):
         self.logger.store(Epoch=1, Return=5, EpochLength=7, Loss=4)
@@ -68,7 +98,6 @@ class FileLoggerTest(unittest.TestCase):
         self.logger.store(Return=5, EpochLength=7, Loss=4)
         self.logger.log()
         self.logger.store(Epoch=1)
-        self.assertRaises(ValueError, self.logger.log)
         self.logger.store(Return=3, EpochLength=3, Loss=6)
         self.logger.log()
         self.logger.store(Return=1, EpochLength=1, Loss=1, Foo=3)
@@ -77,7 +106,7 @@ class FileLoggerTest(unittest.TestCase):
     def test_save_model(self):
         model = torch.nn.Linear(10, 10)
         torch.nn.init.kaiming_normal_(model.weight)
-        self.logger.save_model(model)
+        self.logger.save_model(model, 'model')
         loaded = torch.nn.Linear(10, 10)
-        loaded.load_state_dict(torch.load('test-models/vpg/cartpole/default/model_seed_1.pth'))
+        loaded.load_state_dict(torch.load('test-models/vpg/cartpole/default/seed_1/model.pth'))
         torch.testing.assert_close(loaded.weight, model.weight)
