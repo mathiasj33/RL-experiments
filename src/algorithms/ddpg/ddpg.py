@@ -95,8 +95,9 @@ class DDPG:
                         batch = self.buffer.sample(self.config.batch_size)
                         self.update(batch)
 
-            self.logger.store(Epoch=epoch, TotalSteps=step, Time=time.time() - start_time)
+            self.logger.store(Epoch=epoch, TotalSteps=step)
             self.test_agent()
+            self.logger.store(Time=time.time() - start_time)
             test_return_mean = np.mean(self.logger.get('TestEpisodeReturn'))
             pbar.set_postfix({'return': test_return_mean})
             if test_return_mean > max_ret:

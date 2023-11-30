@@ -5,9 +5,9 @@ from multiprocessing import Pool
 import gymnasium as gym
 import numpy as np
 import torch
-from gymnasium.wrappers import ClipAction, TimeLimit
+from gymnasium.wrappers import ClipAction, TimeLimit, FlattenObservation
 
-from config import DDPGConfig, inverted_pendulum, half_cheetah_small, half_cheetah
+from config import DDPGConfig, inverted_pendulum, half_cheetah_small, half_cheetah, dmc_cartpole, dmc_cartpole
 from ddpg import DDPG
 from utils.logger import LogMetadata, Logger
 from utils.wandb_logger import WandbLogger
@@ -15,9 +15,9 @@ from utils.wandb_logger import WandbLogger
 
 def main():
     experiment = 'default'
-    config = half_cheetah
+    config = dmc_cartpole
     parallel = False
-    seeds = range(3)
+    seeds = range(1)
     if parallel:
         with Pool(processes=min(5, len(seeds))) as pool:
             pool.map(functools.partial(run_seed, experiment, config), seeds)
@@ -39,14 +39,11 @@ def run_seed(experiment, config, seed):
         stds={'EpisodeReturn', 'EpisodeLength', 'TestEpisodeReturn', 'TestEpisodeLength'})
     train(config, seed, logger)
     logger.finish()
-    # if show_plots:
-    #     df = utils.plot.load_data(config.env_name, algorithm_and_experiments={'ddpg': [experiment]})
-    #     sns.relplot(df, x='Episode', y='SmoothedReturn', kind='line', errorbar='sd')
-    #     plt.show()
-
 
 def train(config: DDPGConfig, seed: int, logger: Logger):
     env = gym.make(config.env_name)
+    if config.env_name.startswith('dm_control'):
+        env = FlattenObservation(env)
     env = ClipAction(env)
     if config.max_episode_steps is not None:
         env = TimeLimit(env, max_episode_steps=config.max_episode_steps)

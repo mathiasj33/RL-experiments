@@ -51,6 +51,29 @@ inverted_pendulum = DDPGConfig(
     critic_activation=nn.ReLU
 )
 
+dmc_cartpole = DDPGConfig(
+    env_name='dm_control/cartpole-balance_sparse-v0',
+    max_episode_steps=None,
+    gamma=0.99,
+    num_epochs=100,
+    steps_per_epoch=1500,
+    warmup_steps=4500,
+    update_after=1000,
+    update_every=50,
+    num_test_episodes=10,
+    low_clip=-1.,
+    high_clip=1.,
+    noise_variance=0.3,
+    batch_size=128,
+    polyak=0.995,
+    actor_lr=1e-3,
+    critic_lr=1e-3,
+    actor_layers=[256, 256],
+    critic_layers=[256, 256],
+    actor_activation=nn.ReLU,
+    critic_activation=nn.ReLU
+)
+
 half_cheetah_small = DDPGConfig(
     env_name='HalfCheetah-v4',
     max_episode_steps=150,
