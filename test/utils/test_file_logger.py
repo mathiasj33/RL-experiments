@@ -38,7 +38,7 @@ class FileLoggerTest(unittest.TestCase):
         pd.testing.assert_frame_equal(log, expected)
 
     def test_logging(self):
-        self.assertTrue(os.path.exists('test-logs/vpg/cartpole/default/metadata_seed_1.json'))
+        self.assertTrue(os.path.exists('test-logs/vpg/cartpole/default/experiment_metadata.json'))
 
         self.logger.store(Epoch=1)
         self.logger.store(Return=5, EpochLength=7, Loss=4)
@@ -92,6 +92,16 @@ class FileLoggerTest(unittest.TestCase):
             seed=1,
             config=dict(lr=0.01, sizes=[10, 10])
         ), keys=set(), stds=set(), log_dir='test-logs')
+
+    def test_checks_metadata(self):
+        self.assertRaises(ValueError, FileLogger, LogMetadata(
+            algorithm='vpg',
+            env='cartpole',
+            experiment='default',
+            seed=2,
+            config=dict(lr=0.02, sizes=[10, 10])
+        ), keys={'Epoch', 'EpochLength', 'Return', 'Loss'}, stds={'Return', 'Loss'}, log_dir='test-logs',
+                          model_dir='test-models')
 
     def test_checks_data_integrity(self):
         self.logger.store(Epoch=1)

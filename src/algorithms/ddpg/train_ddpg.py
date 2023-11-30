@@ -9,6 +9,7 @@ from gymnasium.wrappers import ClipAction, TimeLimit, FlattenObservation
 
 from config import DDPGConfig, inverted_pendulum, half_cheetah_small, half_cheetah, dmc_cartpole, dmc_cartpole
 from ddpg import DDPG
+from utils.file_logger import FileLogger
 from utils.logger import LogMetadata, Logger
 from utils.wandb_logger import WandbLogger
 

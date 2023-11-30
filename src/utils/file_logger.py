@@ -1,4 +1,5 @@
 import csv
+import fcntl
 import json
 import os
 
@@ -12,12 +13,14 @@ class FileLogger(Logger):
     """
     A simple logger that writes a CSV file.
     """
+
     def __init__(self, metadata: LogMetadata, keys: set[str], stds: set[str], log_dir='logs', model_dir='models'):
         super().__init__(metadata, keys, stds)
         self.log_dir = log_dir
         self.model_dir = model_dir
         self.log_path = os.path.join(self.log_dir, self.metadata.algorithm, self.metadata.env, self.metadata.experiment)
-        self.model_path = os.path.join(self.model_dir, self.metadata.algorithm, self.metadata.env, self.metadata.experiment,
+        self.model_path = os.path.join(self.model_dir, self.metadata.algorithm, self.metadata.env,
+                                       self.metadata.experiment,
                                        f'seed_{self.metadata.seed}')
         self.log_file = f'{self.log_path}/log_seed_{self.metadata.seed}.csv'
         if os.path.exists(self.log_file):
@@ -31,8 +34,21 @@ class FileLogger(Logger):
         self.log_metadata()
 
     def log_metadata(self):
-        with open(f'{self.log_path}/metadata_seed_{self.metadata.seed}.json', 'w+') as f:
-            json.dump(self.metadata, f, indent=4, cls=JsonEncoder)
+        metadata_file = f'{self.log_path}/experiment_metadata.json'
+        with open(metadata_file, 'w+') as f:
+            fcntl.flock(f, fcntl.LOCK_EX)
+            f.seek(0, os.SEEK_END)
+            if f.tell() > 0:  # metadata file exists already
+                f.seek(0)
+                previous_config = json.load(f)['config']
+                if previous_config != self.metadata_as_json()['config']:
+                    raise ValueError('Previous log with different config exists!')
+            else:
+                json.dump(self.metadata, f, indent=4, cls=JsonEncoder)
+            fcntl.flock(f, fcntl.LOCK_UN)
+
+    def metadata_as_json(self) -> dict:
+        return json.loads(json.dumps(self.metadata, cls=JsonEncoder))
 
     def log(self):
         self.check_data_integrity()
