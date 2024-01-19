@@ -9,11 +9,11 @@ class DDPGConfig:
     env_name: str
     max_episode_steps: Optional[int]
     gamma: float
-    num_epochs: int
-    steps_per_epoch: int
+    num_steps: int
     warmup_steps: int
     update_after: int
     update_every: int
+    evaluate_every: int
     num_test_episodes: int
     low_clip: float
     high_clip: float
@@ -32,11 +32,11 @@ inverted_pendulum = DDPGConfig(
     env_name='InvertedPendulum-v4',
     max_episode_steps=None,
     gamma=0.99,
-    num_epochs=10,
-    steps_per_epoch=2000,
+    num_steps=20_000,
     warmup_steps=2000,
     update_after=1000,
     update_every=50,
+    evaluate_every=2000,
     num_test_episodes=10,
     low_clip=-3.,
     high_clip=3.,
@@ -55,11 +55,11 @@ dmc_cartpole = DDPGConfig(
     env_name='dm_control/cartpole-balance_sparse-v0',
     max_episode_steps=None,
     gamma=0.99,
-    num_epochs=100,
-    steps_per_epoch=1500,
+    num_steps=150_000,
     warmup_steps=4500,
     update_after=1000,
     update_every=50,
+    evaluate_every=1500,
     num_test_episodes=10,
     low_clip=-1.,
     high_clip=1.,
@@ -78,11 +78,11 @@ half_cheetah_small = DDPGConfig(
     env_name='HalfCheetah-v4',
     max_episode_steps=150,
     gamma=0.99,
-    num_epochs=20,
-    steps_per_epoch=1000,
+    num_steps=20_000,
     warmup_steps=1000,
     update_after=1000,
     update_every=50,
+    evaluate_every=1000,
     num_test_episodes=10,
     low_clip=-1.,
     high_clip=1.,
@@ -101,11 +101,11 @@ half_cheetah = DDPGConfig(
     env_name='HalfCheetah-v4',
     max_episode_steps=None,
     gamma=0.99,
-    num_epochs=100,
-    steps_per_epoch=10_000,
+    num_steps=1_000_000,
     warmup_steps=10_000,
     update_after=1000,
     update_every=50,
+    evaluate_every=10_000,
     num_test_episodes=10,
     low_clip=-1.,
     high_clip=1.,

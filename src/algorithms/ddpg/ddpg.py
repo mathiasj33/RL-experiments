@@ -5,7 +5,6 @@ import numpy as np
 import torch
 import gymnasium as gym
 from gymnasium.core import Env
-from gymnasium.wrappers import RecordVideo, FlattenObservation, ClipAction
 from torch.distributions import Uniform, Normal
 from torch.nn import MSELoss
 from tqdm import tqdm
@@ -77,14 +76,15 @@ class DDPG:
         env.reset(seed=seed)
         test_env = self.make_test_env()
         test_env.reset(seed=seed)
-        pbar = tqdm(range(1, self.config.num_epochs + 1))
+        num_epochs = self.config.num_steps // self.config.evaluate_every
+        pbar = tqdm(range(1, num_epochs + 1))
         max_ret = 0
         step = 0
         for epoch in pbar:
             obs, _ = env.reset()  # obs: (n_obs,)
             start_time = time.time()
             ret = length = 0
-            for _ in range(self.config.steps_per_epoch):
+            for _ in range(self.config.evaluate_every):
                 step += 1
                 with torch.no_grad():
                     action = self.select_action(obs, step)
@@ -105,9 +105,8 @@ class DDPG:
                         batch = self.buffer.sample(self.config.batch_size)
                         self.update(batch)
 
-            self.logger.store(Epoch=epoch, TotalSteps=step)
+            self.logger.store(Epoch=epoch, TotalSteps=step, Time=time.time() - start_time)
             self.test_agent(test_env)
-            self.logger.store(Time=time.time() - start_time)
             test_return_mean = np.mean(self.logger.get('TestEpisodeReturn'))
             pbar.set_postfix({'return': test_return_mean})
             if test_return_mean > max_ret:

@@ -16,8 +16,10 @@ from utils.wandb_logger import WandbLogger
 
 
 def main():
-    experiment = 'default'
-    config = dmc_cartpole
+    experiment = 'new'
+    config = inverted_pendulum
+    if config.num_steps % config.evaluate_every != 0:
+        raise ValueError('Config error: `num_steps` must be divisible by `evaluate_every`')
     parallel = False
     seeds = range(1)
     if parallel:
@@ -35,7 +37,7 @@ def run_seed(experiment, config, seed):
     random.seed(seed)
     torch.backends.cudnn.deterministic = True
 
-    logger = NoLogger(LogMetadata(
+    logger = WandbLogger(LogMetadata(
         algorithm='ddpg', env=config.env_name, experiment=experiment, seed=seed, config=config
     ), keys={'EpisodeReturn', 'EpisodeLength', 'Epoch', 'TotalSteps', 'Time', 'CriticLoss', 'ActorLoss',
              'TestEpisodeReturn', 'TestEpisodeLength'},
