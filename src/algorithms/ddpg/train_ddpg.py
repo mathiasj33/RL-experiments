@@ -10,6 +10,7 @@ from gymnasium.wrappers import ClipAction, TimeLimit, FlattenObservation, Record
 
 from config import DDPGConfig, inverted_pendulum
 from ddpg import DDPG
+from utils.file_logger import FileLogger
 from utils.logger import LogMetadata, Logger
 from utils.no_logger import NoLogger
 from utils.wandb_logger import WandbLogger

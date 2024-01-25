@@ -15,8 +15,6 @@ class DDPGConfig:
     update_every: int
     evaluate_every: int
     num_test_episodes: int
-    low_clip: float
-    high_clip: float
     noise_variance: float
     batch_size: int
     polyak: float
@@ -38,8 +36,6 @@ inverted_pendulum = DDPGConfig(
     update_every=50,
     evaluate_every=2000,
     num_test_episodes=10,
-    low_clip=-3.,
-    high_clip=3.,
     noise_variance=0.1,
     batch_size=128,
     polyak=0.995,
@@ -61,8 +57,6 @@ dmc_cartpole = DDPGConfig(
     update_every=50,
     evaluate_every=1500,
     num_test_episodes=10,
-    low_clip=-1.,
-    high_clip=1.,
     noise_variance=0.3,
     batch_size=128,
     polyak=0.995,
@@ -84,8 +78,6 @@ half_cheetah_small = DDPGConfig(
     update_every=50,
     evaluate_every=1000,
     num_test_episodes=10,
-    low_clip=-1.,
-    high_clip=1.,
     noise_variance=0.1,
     batch_size=100,
     polyak=0.995,
@@ -107,8 +99,6 @@ half_cheetah = DDPGConfig(
     update_every=50,
     evaluate_every=10_000,
     num_test_episodes=10,
-    low_clip=-1.,
-    high_clip=1.,
     noise_variance=0.1,
     batch_size=100,
     polyak=0.995,

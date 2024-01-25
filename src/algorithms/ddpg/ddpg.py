@@ -26,9 +26,12 @@ class DDPG:
         env = self.make_env()
         obs_space_dims = env.observation_space.shape[0]
         self.action_space_dims = env.action_space.shape[0]
+        if env.action_space.high[0] != -env.action_space.low[0]:
+            raise ValueError('The actor currently only supports symmetric action spaces')
+        limit = float(env.action_space.high[0])
         env.close()
         self.actor = Actor(obs_space_dims, self.action_space_dims, config.actor_layers, config.actor_activation,
-                           config.high_clip).to(self.device)
+                           limit=limit).to(self.device)
         self.actor_target = self.actor.deepcopy().to(self.device)
         self.actor_optimiser = torch.optim.Adam(self.actor.parameters(), lr=config.actor_lr)
         self.critic = Critic(obs_space_dims, self.action_space_dims, config.critic_layers, config.critic_activation).to(self.device)
@@ -37,7 +40,7 @@ class DDPG:
         self.buffer = ExperienceBuffer(obs_space_dims, self.action_space_dims)
         self.config = config
         self.logger = logger
-        self.uniform_dist = Uniform(torch.tensor(self.config.low_clip).to(self.device), torch.tensor(self.config.high_clip).to(self.device))
+        self.uniform_dist = Uniform(torch.tensor(-limit).to(self.device), torch.tensor(limit).to(self.device))
         self.noise_dist = Normal(torch.tensor(0.).to(self.device), torch.tensor(self.config.noise_variance).to(self.device))
 
     def select_action(self, obs: np.ndarray, step: int) -> torch.tensor:
@@ -45,7 +48,7 @@ class DDPG:
             return self.uniform_dist.sample(torch.Size((self.action_space_dims,)))
         action = self.actor(torch.tensor(obs, dtype=torch.float32).to(self.device))
         action += self.noise_dist.sample(torch.Size((self.action_space_dims,)))
-        return torch.clamp(action, min=self.config.low_clip, max=self.config.high_clip)
+        return action
 
     def update(self, batch: ExperienceBatch):
         with torch.no_grad():
