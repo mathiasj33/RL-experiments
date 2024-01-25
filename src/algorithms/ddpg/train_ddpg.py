@@ -22,16 +22,17 @@ def main():
     if config.num_steps % config.evaluate_every != 0:
         raise ValueError('Config error: `num_steps` must be divisible by `evaluate_every`')
     parallel = False
+    record_video = False
     seeds = range(1)
     if parallel:
         with Pool(processes=min(5, len(seeds))) as pool:
-            pool.map(functools.partial(run_seed, experiment, config), seeds)
+            pool.map(functools.partial(run_seed, experiment, config, record_video), seeds)
     else:
         for seed in seeds:
-            run_seed(experiment, config, seed)
+            run_seed(experiment, config, record_video, seed)
 
 
-def run_seed(experiment, config, seed):
+def run_seed(experiment, config, record_video, seed):
     print(f'Running seed {seed}...')
     torch.manual_seed(seed)
     np.random.seed(seed)
@@ -44,14 +45,14 @@ def run_seed(experiment, config, seed):
              'TestEpisodeReturn', 'TestEpisodeLength'},
         stds={'EpisodeReturn', 'EpisodeLength', 'TestEpisodeReturn', 'TestEpisodeLength'})
     video_path = f'videos/ddpg/{config.env_name}/{experiment}/seed_{seed}'
-    train(config, seed, video_path, logger)
+    train(config, seed, video_path, logger, record_video)
     logger.finish()
 
 
-def train(config: DDPGConfig, seed: int, video_path: str, logger: Logger):
+def train(config: DDPGConfig, seed: int, video_path: str, logger: Logger, record_video: bool):
     ddpg = DDPG(config,
                 lambda: make_env(config),
-                lambda: make_test_env(config, video_path, record_video=True),
+                lambda: make_test_env(config, video_path, record_video=record_video),
                 logger)
     try:
         ddpg.train(seed)
